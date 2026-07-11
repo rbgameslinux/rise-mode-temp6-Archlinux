@@ -122,11 +122,24 @@ def find_device(vendor_id: int, product_id: int, interface: int | None) -> Hidra
     return candidates[0]
 
 
+def list_available_sensors() -> dict[str, list[str]]:
+    """Lista sensores de temperatura disponiveis no sistema."""
+    try:
+        import psutil
+    except ImportError:
+        return {}
+
+    sensors = psutil.sensors_temperatures()
+    return {name: [e.label or "(sem label)" for e in entries] for name, entries in sensors.items()}
+
+
 def cpu_temperature(sensor: str | None = None) -> float:
     try:
         import psutil
     except ImportError as exc:
-        raise SystemExit("psutil nao esta instalado; instale python3-psutil ou use --temp.") from exc
+        raise SystemExit(
+            "psutil nao esta instalado; instale python-psutil ou use --temp."
+        ) from exc
 
     sensors = psutil.sensors_temperatures()
     if not sensors:
@@ -139,7 +152,8 @@ def cpu_temperature(sensor: str | None = None) -> float:
                 return float(entries[0].current)
         raise SystemExit(f"Nenhum sensor contendo {sensor!r} foi encontrado.")
 
-    for preferred in ("coretemp", "k10temp", "zenpower", "cpu_thermal"):
+    # Ordem de preferencia: AMD zenpower, AMD k10temp, Intel coretemp, generico
+    for preferred in ("zenpower", "k10temp", "coretemp", "cpu_thermal", "acpitz", "amdgpu"):
         entries = sensors.get(preferred)
         if entries:
             return float(entries[0].current)
@@ -245,6 +259,17 @@ def print_devices() -> None:
         )
 
 
+def print_sensors() -> None:
+    """Lista sensores de temperatura disponiveis."""
+    sensors = list_available_sensors()
+    if not sensors:
+        print("Nenhum sensor de temperatura encontrado.")
+        return
+    print("Sensores disponiveis:")
+    for name, labels in sensors.items():
+        print(f"  {name}: {', '.join(labels)}")
+
+
 def resolve_path(args: argparse.Namespace) -> Path:
     if args.path:
         return Path(args.path)
@@ -274,38 +299,68 @@ def command_watch(args: argparse.Namespace) -> None:
             power = 0
         report = build_report(temp, power, args.unit)
         send_report(path, report, args.method)
-        print(f"\rtemp={temp:.1f}C power={power:5.1f}W unit={args.unit.upper()}   ", end="", flush=True)
+        print(
+            f"\rtemp={temp:.1f}C power={power:5.1f}W unit={args.unit.upper()}   ",
+            end="",
+            flush=True,
+        )
         time.sleep(args.interval)
 
 
 def add_device_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--vid", type=lambda value: int(value, 16), default=DEFAULT_VENDOR_ID)
-    parser.add_argument("--pid", type=lambda value: int(value, 16), default=DEFAULT_PRODUCT_ID)
+    parser.add_argument(
+        "--vid", type=lambda value: int(value, 16), default=DEFAULT_VENDOR_ID
+    )
+    parser.add_argument(
+        "--pid", type=lambda value: int(value, 16), default=DEFAULT_PRODUCT_ID
+    )
     parser.add_argument("--interface", type=int, default=DEFAULT_INTERFACE)
-    parser.add_argument("--path", help="Caminho hidraw explicito, ex.: /dev/hidraw1")
+    parser.add_argument(
+        "--path", help="Caminho hidraw explicito, ex.: /dev/hidraw1"
+    )
 
 
 def add_payload_args(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--temp", type=float, help="Temperatura Celsius fixa para teste.")
-    parser.add_argument("--power", type=float, help="Potencia fixa em watts para teste.")
-    parser.add_argument("--sensor", help="Substring do sensor psutil, ex.: coretemp.")
+    parser.add_argument(
+        "--temp", type=float, help="Temperatura Celsius fixa para teste."
+    )
+    parser.add_argument(
+        "--power", type=float, help="Potencia fixa em watts para teste."
+    )
+    parser.add_argument(
+        "--sensor",
+        help="Substring do sensor psutil, ex.: coretemp, zenpower, k10temp.",
+    )
     parser.add_argument("--unit", choices=("c", "f"), default="c")
-    parser.add_argument("--method", choices=("feature", "write", "both"), default="feature")
+    parser.add_argument(
+        "--method", choices=("feature", "write", "both"), default="feature"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Driver experimental Rise Mode Temp 6 HID.")
+    parser = argparse.ArgumentParser(
+        description="Driver experimental Rise Mode Temp 6 HID."
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     list_parser = subparsers.add_parser("list", help="Lista dispositivos hidraw.")
     list_parser.set_defaults(func=lambda _args: print_devices())
 
-    send_parser = subparsers.add_parser("send", help="Envia uma atualizacao unica ao display.")
+    sensors_parser = subparsers.add_parser(
+        "sensors", help="Lista sensores de temperatura disponiveis."
+    )
+    sensors_parser.set_defaults(func=lambda _args: print_sensors())
+
+    send_parser = subparsers.add_parser(
+        "send", help="Envia uma atualizacao unica ao display."
+    )
     add_device_args(send_parser)
     add_payload_args(send_parser)
     send_parser.set_defaults(func=command_send)
 
-    watch_parser = subparsers.add_parser("watch", help="Atualiza continuamente com temperatura/uso da CPU.")
+    watch_parser = subparsers.add_parser(
+        "watch", help="Atualiza continuamente com temperatura/uso da CPU."
+    )
     add_device_args(watch_parser)
     add_payload_args(watch_parser)
     watch_parser.add_argument("--interval", type=float, default=1.0)

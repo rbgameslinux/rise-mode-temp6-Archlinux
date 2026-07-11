@@ -1,1 +1,1 @@
-SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1a2c", ATTRS{idProduct}=="4984", MODE="0660", GROUP="plugdev", SYMLINK+="rise-temp6"
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="1a2c", ATTRS{idProduct}=="4984", MODE="0660", GROUP="users", SYMLINK+="rise-temp6"
