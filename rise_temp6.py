@@ -153,10 +153,22 @@ def cpu_temperature(sensor: str | None = None) -> float:
         raise SystemExit(f"Nenhum sensor contendo {sensor!r} foi encontrado.")
 
     # Ordem de preferencia: AMD zenpower, AMD k10temp, Intel coretemp, generico
-    for preferred in ("zenpower", "k10temp", "coretemp", "cpu_thermal", "acpitz", "amdgpu"):
+    for preferred in ("zenpower", "k10temp", "coretemp", "cpu_thermal", "acpitz"):
         entries = sensors.get(preferred)
         if entries:
             return float(entries[0].current)
+
+    # Fallback: nct6687 (Super I/O) - procurar diodo da CPU
+    for sensor_name, entries in sensors.items():
+        if "nct" in sensor_name.lower():
+            for entry in entries:
+                if "diode" in entry.label.lower() or "curr" in entry.label.lower():
+                    return float(entry.current)
+
+    # Ultimo recurso: amdgpu (GPU, nao CPU)
+    entries = sensors.get("amdgpu")
+    if entries:
+        return float(entries[0].current)
 
     first_entries = next(iter(sensors.values()))
     return float(first_entries[0].current)

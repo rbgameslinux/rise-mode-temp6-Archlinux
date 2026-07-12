@@ -118,12 +118,6 @@ install_zenpower() {
     echo "Instalando zenpower via $AUR_HELPER (como usuario $SUDO_USER)..."
     sudo -u "$SUDO_USER" $AUR_HELPER -S zenpower --needed --noconfirm
 
-    # Blacklist k10temp para evitar conflito
-    if [ ! -f /etc/modprobe.d/zenpower.conf ]; then
-        echo "Blacklistando k10temp para evitar conflito..."
-        echo "blacklist k10temp" > /etc/modprobe.d/zenpower.conf
-    fi
-
     # Recarregar modulos
     echo "Recarregando modulos..."
     modprobe -r k10temp 2>/dev/null || true
@@ -131,9 +125,15 @@ install_zenpower() {
 
     if [ -d /sys/module/zenpower ]; then
         echo "zenpower instalado e carregado com sucesso!"
+        # Blacklist k10temp SO DEPOIS de confirmar que zenpower carregou
+        if [ ! -f /etc/modprobe.d/zenpower.conf ]; then
+            echo "Blacklistando k10temp para evitar conflito..."
+            echo "blacklist k10temp" > /etc/modprobe.d/zenpower.conf
+        fi
     else
         echo "Aviso: zenpower instalado mas nao conseguiu carregar."
-        echo "Reinicie o sistema para ativar."
+        echo "k10temp permanecera ativo como fallback."
+        echo "Reinicie o sistema para tentar novamente."
     fi
 }
 
@@ -145,10 +145,10 @@ install_zenpower
 detect_sensor() {
     if [ -d /sys/module/zenpower ]; then
         echo "zenpower"
-    elif [ -d /sys/module/coretemp ]; then
-        echo "coretemp"
     elif [ -d /sys/module/k10temp ]; then
         echo "k10temp"
+    elif [ -d /sys/module/coretemp ]; then
+        echo "coretemp"
     else
         echo ""
     fi
@@ -159,7 +159,7 @@ echo ""
 if [ -n "$SENSOR" ]; then
     echo "Sensor ativo: $SENSOR"
 else
-    echo "Sensor: auto-detect (usando amdgpu ou outro disponivel)"
+    echo "Sensor: auto-detect (nct6687/amdgpu ou outro disponivel)"
 fi
 
 # --- Instalar arquivos ---
