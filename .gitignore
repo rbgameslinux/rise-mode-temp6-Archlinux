@@ -6,3 +6,6 @@ __pycache__/
 *.tar.gz
 .venv/
 venv/
+
+# Arquivo de desenvolvimento (nao enviar ao git/AUR)
+DEVLOG.md
