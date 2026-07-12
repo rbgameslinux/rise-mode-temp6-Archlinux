@@ -46,7 +46,30 @@ Exemplo para `29 C` e `15 W`:
 07 00 02 09 00 00 01 05 ...
 ```
 
-## Requisitos
+## Instalacao via AUR (Recomendado para Arch Linux)
+
+O pacote esta disponivel no **AUR** (Arch User Repository):
+
+```bash
+# Com yay
+yay -S rise-mode-temp6-archlinux
+
+# Com paru
+paru -S rise-mode-temp6-archlinux
+```
+
+O pacote instala automaticamente:
+- Script principal em `/usr/bin/rise_temp6.py`
+- Servico systemd
+- Regras udev
+- Dependencias (python-psutil)
+
+Para ativar e iniciar:
+```bash
+sudo systemctl enable --now rise-temp6.service
+```
+
+## Instalacao Manual
 
 ### Arch Linux / Manjaro / EndeavourOS
 
