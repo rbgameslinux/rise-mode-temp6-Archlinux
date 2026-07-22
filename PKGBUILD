@@ -2,7 +2,7 @@
 
 pkgname=rise-mode-temp6-archlinux
 pkgver=1.0.1
-pkgrel=1
+pkgrel=2
 pkgdesc="Driver experimental para display USB do air cooler Rise Mode Temp 6 Pro (Arch Linux)"
 arch=('any')
 url="https://github.com/rbgameslinux/rise-mode-temp6-Archlinux"
@@ -30,8 +30,9 @@ package() {
     # Instalar script principal
     install -Dm755 rise_temp6.py "$pkgdir/usr/bin/rise_temp6.py"
 
-    # Instalar servico systemd
-    install -Dm644 rise-temp6.service "$pkgdir/etc/systemd/system/rise-temp6.service"
+    # Instalar servico systemd (ajustar caminho para /usr/bin/ no contexto do pacote)
+    sed 's|/usr/local/bin/rise_temp6.py|/usr/bin/rise_temp6.py|' rise-temp6.service > "$pkgdir/etc/systemd/system/rise-temp6.service"
+    chmod 644 "$pkgdir/etc/systemd/system/rise-temp6.service"
 
     # Instalar regras udev
     install -Dm644 99-rise-temp6.rules "$pkgdir/etc/udev/rules.d/99-rise-temp6.rules"

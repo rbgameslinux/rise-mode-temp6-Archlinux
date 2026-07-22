@@ -1,7 +1,7 @@
 pkgbase = rise-mode-temp6-archlinux
 	pkgdesc = Driver experimental para display USB do air cooler Rise Mode Temp 6 Pro (Arch Linux)
 	pkgver = 1.0.1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/rbgameslinux/rise-mode-temp6-Archlinux
 	install = rise-temp6.install
 	arch = any
