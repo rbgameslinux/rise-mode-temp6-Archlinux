@@ -107,7 +107,7 @@ O instalador:
 
 - Detecta automaticamente a distro (Arch, Manjaro, EndeavourOS)
 - Detecta o sensor de temperatura (zenpower para AMD, coretemp para Intel)
-- Instala o script em `/usr/local/bin/`
+- Instala o script em `/usr/bin/`
 - Configura o servico systemd
 - Configura as regras udev
 
@@ -222,7 +222,7 @@ sudo nano /etc/systemd/system/rise-temp6.service
 Altere a linha:
 
 ```ini
-ExecStart=/usr/local/bin/rise_temp6.py watch --sensor zenpower --interval 1 --method feature
+ExecStart=/usr/bin/rise_temp6.py watch --sensor zenpower --interval 1 --method feature
 ```
 
 Para o sensor desejado (zenpower, k10temp, coretemp, cpu_thermal).

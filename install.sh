@@ -166,7 +166,7 @@ fi
 echo ""
 echo "=== Instalando rise-temp6 ==="
 
-install -m 0755 rise_temp6.py /usr/local/bin/rise_temp6.py
+install -m 0755 rise_temp6.py /usr/bin/rise_temp6.py
 install -m 0644 rise-temp6.service /etc/systemd/system/rise-temp6.service
 install -m 0644 99-rise-temp6.rules /etc/udev/rules.d/99-rise-temp6.rules
 

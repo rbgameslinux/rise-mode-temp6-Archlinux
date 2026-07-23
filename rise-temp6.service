@@ -4,7 +4,7 @@ After=multi-user.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/rise_temp6.py watch --interval 1 --method feature
+ExecStart=/usr/bin/rise_temp6.py watch --interval 1 --method feature
 Restart=always
 RestartSec=2
 

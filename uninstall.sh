@@ -12,7 +12,7 @@ systemctl disable --now rise-temp6.service 2>/dev/null || true
 echo "Removendo arquivos..."
 rm -f /etc/systemd/system/rise-temp6.service
 rm -f /etc/udev/rules.d/99-rise-temp6.rules
-rm -f /usr/local/bin/rise_temp6.py
+rm -f /usr/bin/rise_temp6.py
 
 echo "Recarregando configuracoes..."
 systemctl daemon-reload
